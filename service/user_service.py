@@ -18,19 +18,16 @@ def handle_status_user(username: str, chat_id: str):
     data = user_db.get_user_by_chat_id(chat_id)
 
     # get the data from the database and check if the user is showering or not
+    has_showered = data[0]['has_showered_today']
+    shower_status = data[0]['shower_status']
 
-    if data[0]['has_showered_today']:
-        logger.log("You have showered", CONTEXT)
-        return True
-    else:            
-        logger.log("You have not showered", CONTEXT)
-        return False
+    return { 'has_showered_today': has_showered, 'shower_status': shower_status }
 
 def handle_shower_request(username: str, chat_id: str):
     logger.log("Shower command called", CONTEXT)
     handle_start_user(username, chat_id)
     try:
-       res = user_db.update_user(chat_id, { "shower_status": True, "start_time": datetime.now().isoformat() })
+       user_db.update_user(chat_id, { "shower_status": True, "start_time": datetime.now().isoformat() })
     except Exception as e:
         logger.log("Error handling shower request", CONTEXT)
 
@@ -49,7 +46,6 @@ def handle_not_showered(chat_id):
 
 def handle_leaderboard_request():
     data = user_db.get_users()
-    print(data)
     leaderboard = "Shower Leaderboard🚿🏆\n\n"
     for i, user in enumerate(data, start=1):
         leaderboard += (

@@ -12,7 +12,6 @@ scheduler = Scheduler()
 def initialise(bot):
     def send_day_end_reminder():
         data = user_service.get_users_status()
-        print(len(data))
         for item in data:
             chat_id = item['chat_id']
             has_showered_today = item['has_showered_today']
