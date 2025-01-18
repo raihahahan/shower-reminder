@@ -4,11 +4,10 @@ document
     event.preventDefault();
 
     const username = document.getElementById("telegram-username").value;
+    const url = "https://mmsapi.a.pinggy.link";
 
     try {
-      const response = await fetch(
-        `http://127.0.0.1:8000/check_shower/${username}`
-      );
+      const response = await fetch(`${url}/check_shower/${username}`);
       const data = await response.json();
 
       if (response.ok) {

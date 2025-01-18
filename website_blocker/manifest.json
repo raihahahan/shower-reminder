@@ -1,8 +1,8 @@
 {
   "manifest_version": 3,
-  "name": "Website Blocker",
+  "name": "Shower Break",
   "version": "1.0",
-  "description": "Blocks specified websites.",
+  "description": "Blocks programming related websites until you shower for the day.",
   "permissions": ["declarativeNetRequest", "storage", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {
@@ -21,7 +21,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["supabase.min.js"],
+      "js": [],
       "run_at": "document_start"
     }
   ],
