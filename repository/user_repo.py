@@ -17,6 +17,16 @@ class UserRepo:
             return response.data
         except:
             return []
+        
+    def get_user_by_username(self, username):
+        try:
+            response = self.supabase.table("users").select("*").eq("username", username).execute()
+            print(response.data)
+            if not response:
+                raise Exception(f"Error fetching user by username: {response.error}")
+            return response.data[0]
+        except:
+            return None
 
     
     def get_user_by_chat_id(self, chat_id):

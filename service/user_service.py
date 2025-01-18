@@ -20,8 +20,8 @@ def handle_status_user(username: str, chat_id: str):
     data = user_db.get_user_by_chat_id(chat_id)
 
     # get the data from the database and check if the user is showering or not
-    has_showered = data[0]['has_showered_today']
-    shower_status = data[0]['shower_status']
+    has_showered = data['has_showered_today']
+    shower_status = data['shower_status']
 
     return { 'has_showered_today': has_showered, 'shower_status': shower_status }
 
@@ -99,3 +99,10 @@ def handle_end_shower(chat_id: str):
             "status": "failed",
             "message": "You did not shower at all."
         }
+
+
+def handle_check_email(username):
+    #find your email through username
+    print(username)
+    data = user_db.get_user_by_username(username)
+    return False if 'email' not in data else True
