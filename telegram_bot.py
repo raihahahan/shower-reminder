@@ -1,14 +1,16 @@
+
 import command_handler.catch_all
 import command_handler.end
 import command_handler.start
 import command_handler.status
 import command_handler.shower
-
-import telebot
-import command_handler
 import command_handler.status
-from service import scheduler, logging_service
+from service import scheduler
 from globals import BOT_TOKEN
+import scheduler.daily_reminder
+import scheduler.day_end
+import telebot
+from utils import logger
 
 # Initialise bot
 bot = telebot.TeleBot(BOT_TOKEN)
@@ -21,9 +23,10 @@ command_handler.shower.initialise(bot)
 
 command_handler.catch_all.initialise(bot) # This should be the last command handler to be initialised
 
-# Initialise scheduler
-scheduler.initialise(bot)
+# Initialise schedulers
+scheduler.daily_reminder.initialise(bot)
+scheduler.day_end.initialise(bot)
 
 # Start bot
-logging_service.log("Bot started.", "BOT")
+logger.log("Bot started.", "BOT")
 bot.infinity_polling()

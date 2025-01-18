@@ -8,6 +8,14 @@ class UserRepo:
 
         self.supabase = supabase_client
     
+    def get_users(self, columns="*"):
+        try:
+            response = self.supabase.table("users").select(columns).execute()
+            return response.data
+        except:
+            return []
+
+    
     def get_user_by_chat_id(self, chat_id):
         """Fetch a user by their Telegram chat ID."""
         try:
@@ -24,17 +32,18 @@ class UserRepo:
         try:
             response = self.supabase.table("users").upsert({"username": username, "chat_id": chat_id}).execute()
             if not response:
-                raise Exception(f"Error creating user: {response.error}")
+                raise Exception(f"Error creating use")
             return response.data
         except:
             return
 
-    def update_user_chat_id(self, chat_id, new_data):
-        """Update a user's chat ID."""
+    def update_user(self, chat_id, new_data):
+        """Update a user's data."""
         try:
             response = self.supabase.table("users").update(new_data).eq("chat_id", chat_id).execute()
             if not response:
-                raise Exception(f"Error updating user chat_id: {response.error}")
+                raise Exception(f"Error updating user")
+
             return response.data
         except:
             return
