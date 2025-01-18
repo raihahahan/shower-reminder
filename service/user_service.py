@@ -21,6 +21,8 @@ def handle_status_user(username: str, chat_id: str):
 
     # get the data from the database and check if the user is showering or not
 
+    if data['shower_status']:
+        logger.log("User is showering", CONTEXT)
     if data[0]['has_showered_today']:
         logger.log("You have showered", CONTEXT)
         return True
@@ -61,17 +63,16 @@ def handle_leaderboard_request():
             f"   - Showered Today: {'✅' if user['has_showered_today'] else '❌'}\n\n"
         )
     return leaderboard
-def end_shower(chat_id: str):
+
+def handle_end_shower(chat_id: str):
     user = user_db.get_user_by_chat_id(chat_id)
     if not user:
         raise ValueError("User not found!!")
 
     start_time = user.get("start_time")
-    if start_time is None:
+    if not user.get("shower_status"):
         raise ValueError("You did not start a shower session!! Go scan the QR code.")
-    if not isinstance(start_time, str):
-        raise ValueError(f"Invalid start_time format: {start_time}")
-
+    
     start_time = datetime.fromisoformat(start_time)
     end_time = datetime.now()
     duration = end_time - start_time
