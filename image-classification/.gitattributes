@@ -1,5 +1,8 @@
+# Large files
 *.pt filter=lfs diff=lfs merge=lfs -text
 *.pth filter=lfs diff=lfs merge=lfs -text
 *.bin filter=lfs diff=lfs merge=lfs -text
-models/fine_tuned_resnet/**/* filter=lfs diff=lfs merge=lfs -text
 *.safetensors filter=lfs diff=lfs merge=lfs -text
+
+# Fine-tuned model directory
+image-classification/models/fine_tuned_resnet/**/* filter=lfs diff=lfs merge=lfs -text
