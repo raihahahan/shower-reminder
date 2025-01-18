@@ -3,9 +3,12 @@ import os
 import numpy as np
 import torch
 import torch.nn.functional as F
+import platform
+
 from sklearn.utils.class_weight import compute_class_weight
 from transformers import AutoModelForImageClassification, TrainingArguments, Trainer, EarlyStoppingCallback
 
+# Add the scripts directory to the Python path
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "../../")))
 from scripts.dataset_preprocessing import load_and_preprocess_dataset
 import evaluate
@@ -22,6 +25,9 @@ class FocalLoss(torch.nn.Module):
         return focal_loss.mean()
 
 def get_class_weights(dataset):
+    """
+    Computes class weights based on the dataset.
+    """
     labels = np.array([example['label'] for example in dataset['train']])
     unique_classes = np.unique(labels)
     
@@ -40,11 +46,10 @@ def get_class_weights(dataset):
     return dict(enumerate(weights))
 
 class CustomTrainer(Trainer):
-    def __init__(self, class_weights, *args, continue_training=False, **kwargs):
+    def __init__(self, class_weights, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.class_weights = class_weights
         self.focal_loss = FocalLoss(gamma=2.5)
-        self.continue_training = continue_training
 
     def compute_loss(self, model, inputs, return_outputs=False, **kwargs):
         labels = inputs.get("labels")
@@ -58,7 +63,7 @@ class CustomTrainer(Trainer):
         
         logits = outputs.logits
         
-        # Add label smoothing
+        # Compute loss with label smoothing
         if labels is not None:
             smoothing = 0.1
             labels_one_hot = F.one_hot(labels, num_classes=2).float()
@@ -70,68 +75,59 @@ class CustomTrainer(Trainer):
                 dtype=torch.float
             )
             
-            # Increase weight for focal loss for harder examples
             ce_loss = F.cross_entropy(logits, labels, weight=weights_tensor)
             focal_loss = self.focal_loss(logits, labels, weight=weights_tensor)
-            loss = 0.5 * ce_loss + 0.5 * focal_loss  # Equal weight to both losses
+            loss = 0.5 * ce_loss + 0.5 * focal_loss
             
             return (loss, outputs) if return_outputs else loss
 
+
 def fine_tune_resnet(output_dir="models/fine_tuned_resnet", continue_training=False):
+    """
+    Fine-tunes a pre-trained ResNet model for binary classification.
+    """
+    # Load and preprocess the dataset
     dataset = load_and_preprocess_dataset(data_dir="dataset")
+    
+    # Compute class weights
     weights = get_class_weights(dataset)
     print(f"Class weights: {weights}")
 
-    if continue_training and os.path.exists(output_dir):
-        print(f"Loading existing model from {output_dir}")
-        model = AutoModelForImageClassification.from_pretrained(
-            output_dir,
-            num_labels=2,
-            id2label={0: "not_showerhead", 1: "showerhead"},
-            label2id={"not_showerhead": 0, "showerhead": 1},
-        )
-        print("Model loaded successfully. Continuing training...")
-    else:
-        print("Starting training from base ResNet-50 model...")
-        model = AutoModelForImageClassification.from_pretrained(
-            "microsoft/resnet-50",
-            num_labels=2,
-            id2label={0: "not_showerhead", 1: "showerhead"},
-            label2id={"not_showerhead": 0, "showerhead": 1},
-            ignore_mismatched_sizes=True,
-        )
-
-    def get_device():
-            if torch.backends.mps.is_available() and torch.backends.mps.is_built():
-                return "mps"
-            elif torch.cuda.is_available():
-                return "cuda"
-            return "cpu"
+    # Initialize the pre-trained model
+    model = AutoModelForImageClassification.from_pretrained(
+        "microsoft/resnet-50",
+        num_labels=2,
+        id2label={0: "not_showerhead", 1: "showerhead"},
+        label2id={"not_showerhead": 0, "showerhead": 1},
+        ignore_mismatched_sizes=True
+    )
     
+    device = torch.device("cuda" if torch.cuda.is_available() else "mps" if platform.system() == "Darwin" else "cpu")
+    use_bf16 = True if device.type == "mps" else False
+
+    # Training arguments
     training_args = TrainingArguments(
         output_dir=output_dir,
         eval_strategy="epoch",
         save_strategy="epoch",
-        logging_dir="./logs",
-        learning_rate=1e-5,  # Lower learning rate
-        per_device_train_batch_size=32,  # Increased batch size
-        per_device_eval_batch_size=32,
-        num_train_epochs=12,  # Increased epochs
-        weight_decay=0.02,   # Increased weight decay
-        logging_steps=50,
-        warmup_ratio=0.2,    # Increased warmup
-        lr_scheduler_type="cosine",
+        learning_rate=2e-5,
+        per_device_train_batch_size=16,
+        per_device_eval_batch_size=16,
+        num_train_epochs=10,  # Increased epochs for better learning
+        weight_decay=0.01,
+        logging_steps=100,
+        warmup_ratio=0.1,
         gradient_accumulation_steps=2,
+        bf16=torch.backends.mps.is_available(),  # Use mixed precision on MPS
         load_best_model_at_end=True,
-        metric_for_best_model="f1",  # Using F1 score to balance precision and recall
+        metric_for_best_model="accuracy",
         greater_is_better=True,
         save_total_limit=1,
-        save_steps=float("inf"),
-        no_cuda=True, 
         dataloader_num_workers=4,
-        dataloader_pin_memory=True
+        resume_from_checkpoint=continue_training,
     )
 
+    # Initialize the trainer
     trainer = CustomTrainer(
         class_weights=weights,
         model=model,
@@ -139,20 +135,22 @@ def fine_tune_resnet(output_dir="models/fine_tuned_resnet", continue_training=Fa
         train_dataset=dataset["train"],
         eval_dataset=dataset["validation"],
         compute_metrics=compute_metrics,
-        continue_training=continue_training,
         callbacks=[
-            EarlyStoppingCallback(
-                early_stopping_patience=5,
-                early_stopping_threshold=0.01
-            )
+            EarlyStoppingCallback(early_stopping_patience=3)
         ]
     )
 
+    # Train the model
     trainer.train()
+
+    # Save the model
+    print(f"Saving model to {output_dir}")
     model.save_pretrained(output_dir)
-    print(f"Fine-tuned model saved to: {output_dir}")
 
 def compute_metrics(eval_pred):
+    """
+    Computes accuracy, precision, recall, and F1-score.
+    """
     logits, labels = eval_pred
     predictions = logits.argmax(axis=-1)
     
@@ -172,12 +170,12 @@ def compute_metrics(eval_pred):
         'recall': recall,
         'f1': f1
     }
-    
+
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
     parser.add_argument('--continue_training', action='store_true', 
-                      help='Continue training from saved model')
+                        help='Continue training from a saved checkpoint')
     args = parser.parse_args()
     
-    fine_tune_resnet(continue_training=args.continue_training)
+    fine_tune_resnet(output_dir="models/fine_tuned_resnet", continue_training=args.continue_training)
