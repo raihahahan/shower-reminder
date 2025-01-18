@@ -21,7 +21,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["supabase.min.js"],
+      "js": [],
       "run_at": "document_start"
     }
   ],

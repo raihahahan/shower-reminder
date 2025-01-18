@@ -42,19 +42,6 @@ function stopBlockingSites() {
   });
 }
 
-// Listen for tab updates to inject the script
-chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
-  if (changeInfo.status === "complete" && tab.url) {
-    chrome.scripting
-      .executeScript({
-        target: { tabId: tabId, allFrames: false },
-        files: ["supabase.min.js"],
-      })
-      .then(() => console.log(`Script injected into ${tab.url}`))
-      .catch((err) => console.error("Failed to inject script:", err));
-  }
-});
-
 chrome.tabs.onUpdated.addListener((tabId, changeInfo, tab) => {
   if (changeInfo.status === "complete" && tab.url) {
     chrome.storage.sync.get(["hasShoweredToday", "username"], (data) => {
