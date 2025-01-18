@@ -1,6 +1,6 @@
 from repository.user_repo import user_db
 from utils import logger
-from datetime import datetime
+from datetime import datetime, timezone
 
 CONTEXT = "USER SERVICE"
 
@@ -23,7 +23,8 @@ def handle_status_user(username: str, chat_id: str):
 
     if data['shower_status']:
         logger.log("User is showering", CONTEXT)
-    if data[0]['has_showered_today']:
+        return True
+    if data['has_showered_today']:
         logger.log("You have showered", CONTEXT)
         return True
     else:            
@@ -34,7 +35,7 @@ def handle_shower_request(username: str, chat_id: str):
     logger.log("Shower command called", CONTEXT)
     handle_start_user(username, chat_id)
     try:
-       res = user_db.update_user(chat_id, { "shower_status": True, "start_time": datetime.now().isoformat() })
+       res = user_db.update_user(chat_id, { "shower_status": True, "start_time": datetime.now(timezone.utc).isoformat() })
     except Exception as e:
         logger.log("Error handling shower request", CONTEXT)
 
@@ -67,18 +68,26 @@ def handle_leaderboard_request():
 def handle_end_shower(chat_id: str):
     user = user_db.get_user_by_chat_id(chat_id)
     if not user:
-        raise ValueError("User not found!!")
+        return {
+            "status": "failed",
+            "message": "User not found!!"
+        }
 
     start_time = user.get("start_time")
     if not user.get("shower_status"):
-        raise ValueError("You did not start a shower session!! Go scan the QR code.")
+        return {
+            "status": "failed",
+            "message": "You did not start a shower session byee!!"
+        }
     
     start_time = datetime.fromisoformat(start_time)
-    end_time = datetime.now()
+    end_time = datetime.now(timezone.utc)
     duration = end_time - start_time
     minutes = duration.total_seconds() / 60
 
-    if minutes > 5:
+    logger.log(f"Start Time: {start_time}, End Time: {end_time}, Duration: {minutes} minutes", CONTEXT)
+
+    if minutes > 0.1:
         user_db.update_user(
             chat_id,
             {
@@ -90,7 +99,7 @@ def handle_end_shower(chat_id: str):
         )
         return {
             "status": "success",
-            "message": "Shower ended! You've spent {int(minutes)} showering!"
+            "message": f"Shower ended! You've spent {minutes:.2f} minutes showering!"
         }
     else:
         return {
