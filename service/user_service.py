@@ -20,8 +20,8 @@ def handle_status_user(username: str, chat_id: str):
     data = user_db.get_user_by_chat_id(chat_id)
 
     # get the data from the database and check if the user is showering or not
-    has_showered = data[0]['has_showered_today']
-    shower_status = data[0]['shower_status']
+    has_showered = data['has_showered_today']
+    shower_status = data['shower_status']
 
     return { 'has_showered_today': has_showered, 'shower_status': shower_status }
 
@@ -63,14 +63,14 @@ def handle_end_shower(chat_id: str):
     if not user:
         return {
             "status": "failed",
-            "message": "User not found!!"
+            "message": "User not found!! Start a new chat now using the /start command."
         }
 
     start_time = user.get("start_time")
     if not user.get("shower_status"):
         return {
             "status": "failed",
-            "message": "You did not start a shower session byee!!"
+            "message": "You did not start a shower session!! Start your shower now using the /shower command."
         }
     
     start_time = datetime.fromisoformat(start_time)
@@ -92,10 +92,10 @@ def handle_end_shower(chat_id: str):
         )
         return {
             "status": "success",
-            "message": f"Shower ended! You've spent {minutes:.2f} minutes showering!"
+            "message": f"Shower ended! You've spent {minutes:.2f} minutes showering! "
         }
     else:
         return {
             "status": "failed",
-            "message": "You did not shower at all."
+            "message": "Shower longer!"
         }
