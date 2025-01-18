@@ -46,7 +46,7 @@ def get_class_weights(dataset):
     return dict(enumerate(weights))
 
 class CustomTrainer(Trainer):
-    def __init__(self, class_weights, *args, **kwargs):
+    def __init__(self, class_weights, *args, continue_training=False, **kwargs):
         super().__init__(*args, **kwargs)
         self.class_weights = class_weights
         self.focal_loss = FocalLoss(gamma=2.5)
@@ -120,7 +120,7 @@ def fine_tune_resnet(output_dir="models/fine_tuned_resnet", continue_training=Fa
         gradient_accumulation_steps=2,
         bf16=torch.backends.mps.is_available(),  # Use mixed precision on MPS
         load_best_model_at_end=True,
-        metric_for_best_model="accuracy",
+        metric_for_best_model="f1",  # Using F1 score to balance precision and recall
         greater_is_better=True,
         save_total_limit=1,
         dataloader_num_workers=4,
@@ -135,6 +135,7 @@ def fine_tune_resnet(output_dir="models/fine_tuned_resnet", continue_training=Fa
         train_dataset=dataset["train"],
         eval_dataset=dataset["validation"],
         compute_metrics=compute_metrics,
+        continue_training=continue_training,
         callbacks=[
             EarlyStoppingCallback(early_stopping_patience=3)
         ]
@@ -171,6 +172,27 @@ def compute_metrics(eval_pred):
         'f1': f1
     }
 
+def compute_metrics(eval_pred):
+    logits, labels = eval_pred
+    predictions = logits.argmax(axis=-1)
+    
+    accuracy = (predictions == labels).mean()
+    
+    true_pos = ((predictions == 1) & (labels == 1)).sum()
+    false_pos = ((predictions == 1) & (labels == 0)).sum()
+    false_neg = ((predictions == 0) & (labels == 1)).sum()
+    
+    precision = float(true_pos) / float(true_pos + false_pos + 1e-7)
+    recall = float(true_pos) / float(true_pos + false_neg + 1e-7)
+    f1 = 2 * precision * recall / (precision + recall + 1e-7)
+    
+    return {
+        'accuracy': accuracy,
+        'precision': precision,
+        'recall': recall,
+        'f1': f1
+    }
+    
 if __name__ == "__main__":
     import argparse
     parser = argparse.ArgumentParser()
