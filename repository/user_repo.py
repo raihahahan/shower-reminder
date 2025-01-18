@@ -22,13 +22,13 @@ class UserRepo:
     def get_user_by_chat_id(self, chat_id):
         """Fetch a user by their Telegram chat ID."""
         try:
-            response = self.supabase.table("users").select("*").eq("chat_id", chat_id).execute()
-            if not response:
-                raise Exception(f"Error fetching user by chat_id: {response.error}")
-            return response.data
+          response = self.supabase.table("users").select("*").eq("chat_id", chat_id).execute()
+          print(response.data)
+          if not response:
+            raise Exception(f"Error fetching user by chat_id: {response.error}")
+          return response.data[0]
         except:
-            return
-
+            return None
 
     def create_user(self, username, chat_id):
         """Insert a new user into the database."""
