@@ -9,8 +9,7 @@ def initialise(bot):
 
         if has_showered:
             bot.send_message(
-                user_id, "You have showered."
-                "/end - Stop showering\n"
+                user_id, "You have showered today."
                 )
         else:
             bot.send_message(
