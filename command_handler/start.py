@@ -2,7 +2,7 @@ from service import user_service
 from utils import logger
 
 def initialise(bot):
-    @bot.message_handler(commands=['start', 'hello'])
+    @bot.message_handler(commands=['start'])
     def send_welcome(message):
         logger.log(f"Received message: {message.text}", "START COMMAND HANDLER")
         username = message.from_user.username
@@ -11,6 +11,5 @@ def initialise(bot):
 
         bot.reply_to(message, 
             "Welcome to ShowerTracker! 🚿\n\n"
-            "Commands:\n"
-            "/status - Are you showering?\n"
+            "/check - Have you showered?\n"
     )

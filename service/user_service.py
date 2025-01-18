@@ -13,11 +13,11 @@ def handle_status_user(username: str, chat_id: str):
 
     # get the data from the database and check if the user is showering or not
 
-    if data[0]['shower_status']:
-        logger.log("User is showering", CONTEXT)
+    if data[0]['has_showered_today']:
+        logger.log("You have showered", CONTEXT)
         return True
     else:            
-        logger.log("User is not showering", CONTEXT)
+        logger.log("You have not showered", CONTEXT)
         return False
 
 def handle_shower_request(username: str, chat_id: str):
