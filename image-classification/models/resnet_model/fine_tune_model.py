@@ -60,25 +60,25 @@ def fine_tune_resnet(output_dir="models/fine_tuned_resnet"):
     # Define training arguments
     training_args = TrainingArguments(
         output_dir=output_dir,
-        eval_strategy="steps",
-        save_strategy="steps",
+        eval_strategy="epoch",
+        save_strategy="epoch",
         logging_dir="./logs",
         learning_rate=2e-5,
         per_device_train_batch_size=16,
         per_device_eval_batch_size=16,
         num_train_epochs=5,
         weight_decay=0.05,
-        save_total_limit=2,
         logging_steps=100,
         eval_steps=100,
-        save_steps=100,
         warmup_ratio=0.1,
         lr_scheduler_type="cosine",
         gradient_accumulation_steps=4,
         load_best_model_at_end=True,
         metric_for_best_model="accuracy",
         greater_is_better=True,
-        use_mps_device=True
+        use_mps_device=True,       
+        save_total_limit=1,          
+        save_steps=float("inf"),
     )
 
     # Define evaluation metric
