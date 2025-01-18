@@ -3,7 +3,7 @@
   "name": "Website Blocker",
   "version": "1.0",
   "description": "Blocks specified websites.",
-  "permissions": ["declarativeNetRequest", "storage"],
+  "permissions": ["declarativeNetRequest", "storage", "scripting"],
   "host_permissions": ["<all_urls>"],
   "background": {
     "service_worker": "background.js"
@@ -14,8 +14,17 @@
       "16": "icon.png",
       "48": "icon.png",
       "128": "icon.png"
-    }
+    },
+    "default_width": 800,
+    "default_height": 900
   },
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["supabase.min.js"],
+      "run_at": "document_start"
+    }
+  ],
   "declarative_net_request": {
     "rule_resources": [
       {
@@ -24,5 +33,11 @@
         "path": "rules.json"
       }
     ]
-  }
+  },
+  "web_accessible_resources": [
+    {
+      "resources": [],
+      "matches": ["<all_urls>"]
+    }
+  ]
 }
