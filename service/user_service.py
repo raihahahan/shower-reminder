@@ -37,3 +37,16 @@ def handle_not_showered(chat_id):
     new_data = { 'shower_count': 0 }
     user_db.update_user(chat_id, new_data)
 
+
+def handle_leaderboard_request():
+    data = user_db.get_users()
+    print(data)
+    leaderboard = "Shower Leaderboard🚿🏆\n\n"
+    for i, user in enumerate(data, start=1):
+        leaderboard += (
+            f"{i}️⃣ {user['username']}\n"
+            f"   - Shower Status: {'✅' if user['shower_status'] else '❌'}\n"
+            f"   - Shower Count: {user['shower_count']}\n"
+            f"   - Showered Today: {'✅' if user['has_showered_today'] else '❌'}\n\n"
+        )
+    return leaderboard
