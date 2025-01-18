@@ -1,5 +1,5 @@
 from service import user_service
-from utils import logger
+from utils import logger, messages
 from command_handler.shower import send_shower_helper
 
 def initialise(bot):
@@ -17,8 +17,7 @@ def initialise(bot):
         user_service.handle_start_user(username, chat_id)
 
         bot.send_message(chat_id, 
-            "Welcome to ShowerTracker! 🚿\n\n"
-            "/shower - Start a shower 🛀\n"
-            "/check - Have you showered? 🤔\n"
-            "/leaderboard - Check the leaderboard 🔝\n"
+            "Welcome to ShowerTracker! 🚿\n\n" +
+            messages.HELP + 
+            messages.PROMOTE
         )

@@ -35,7 +35,7 @@ def initialise(bot):
             is_valid = api.photo_validator.validate_photo(downloaded_photo)
 
             if is_valid:
-                bot.send_message(chat_id, "Nice! You're good to go.")
+                bot.send_message(chat_id, "Nice! You're good to go. Press /end after you're done showering for a decent amount of time.")
                 user_service.handle_shower_request(username, user_id)
             else:
                 bot.reply_to(message, "Please send a picture of a shower head instead 😾. Send /shower again to start.")
