@@ -1,34 +1,33 @@
 from datasets import load_dataset, DatasetDict
 from torchvision.transforms import (
     Compose, Resize, ToTensor, Normalize,
-    RandomHorizontalFlip, RandomRotation, ColorJitter
+    RandomHorizontalFlip, RandomVerticalFlip, RandomRotation, ColorJitter,
+    RandomAffine, RandomPerspective, RandomResizedCrop, RandomGrayscale,
+    GaussianBlur, CenterCrop
 )
 
 def load_and_preprocess_dataset(data_dir="dataset"):
-    # Load dataset from directory
     dataset = load_dataset("imagefolder", data_dir=data_dir)
-
-    # Define preprocessing transformations
     normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     
-    # Augmentations for training
     train_transforms = Compose([
-    Resize((224, 224)),
-    RandomHorizontalFlip(p=0.5), 
-    RandomRotation(30),          
-    ColorJitter(
-        brightness=0.3, 
-        contrast=0.3, 
-        saturation=0.3, 
-        hue=0.1
-    ), 
-    ToTensor(),
-    normalize
+        Resize((256, 256)),  # Larger initial size
+        RandomResizedCrop(224, scale=(0.7, 1.0), ratio=(0.75, 1.33)),
+        RandomHorizontalFlip(p=0.5),
+        RandomVerticalFlip(p=0.3),
+        RandomRotation(45),
+        RandomAffine(degrees=30, translate=(0.1, 0.1), scale=(0.8, 1.2), shear=15),
+        RandomPerspective(distortion_scale=0.5, p=0.5),
+        ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
+        RandomGrayscale(p=0.1),
+        GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
+        ToTensor(),
+        normalize
     ])
     
-    # Standard preprocessing for validation
     val_transforms = Compose([
         Resize((224, 224)),
+        CenterCrop(224),
         ToTensor(),
         normalize
     ])
