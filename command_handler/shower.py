@@ -2,21 +2,24 @@ from service import user_service
 from service import state_service
 import api.photo_validator
 
+def send_shower_helper(message, bot):
+    user_id = message.from_user.id
+    username = message.from_user.username
+    chat_id = message.chat.id
+
+    status = user_service.handle_status_user(username, user_id)
+    
+    if status['shower_status']:
+        bot.send_message(chat_id, "You are currently taking a shower.")
+    else:
+        bot.send_message(chat_id, "Please send a picture of your shower head for proof.")
+        user_id = message.from_user.id
+        state_service.handle_shower_request(user_id)
+
 def initialise(bot):
     @bot.message_handler(commands=['shower'])
     def send_shower(message):
-        user_id = message.from_user.id
-        username = message.from_user.username
-        chat_id = message.chat.id
-
-        status = user_service.handle_status_user(username, user_id)
-        
-        if status['shower_status']:
-            bot.send_message(chat_id, "You are currently taking a shower.")
-        else:
-            bot.send_message(chat_id, "Please send a picture of your shower head for proof.")
-            user_id = message.from_user.id
-            state_service.handle_shower_request(user_id)
+        send_shower_helper(message, bot)
 
     @bot.message_handler(content_types=['photo'])
     def handle_photo(message):
