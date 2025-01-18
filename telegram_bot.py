@@ -5,7 +5,7 @@ import command_handler.leaderboard
 import command_handler.start
 import command_handler.check
 import command_handler.shower
-import command_handler.status
+import command_handler.check
 from globals import BOT_TOKEN
 import scheduler.daily_reminder
 import scheduler.day_end
