@@ -4,6 +4,7 @@ import time
 from threading import Thread
 import schedule
 import telebot
+from repository.user_repo import UserRepo
 
 dotenv.load_dotenv()
 
@@ -11,6 +12,7 @@ BOT_TOKEN = os.environ.get('BOT_TOKEN')
 REMINDER_TIME = os.environ.get('REMINDER_TIME')
 bot = telebot.TeleBot(BOT_TOKEN)
 chat_ids = []
+user_db = UserRepo()
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):

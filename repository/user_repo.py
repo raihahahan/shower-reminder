@@ -7,7 +7,7 @@ class UserRepo:
             raise ValueError("Supabase credentials not set in the environment variables.")
 
         self.supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
-
+    
     def get_user_by_chat_id(self, chat_id):
         """Fetch a user by their Telegram chat ID."""
         response = self.supabase.table("users").select("*").eq("chat_id", chat_id).execute()
