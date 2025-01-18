@@ -1,5 +1,6 @@
 from globals import SUPABASE_KEY, SUPABASE_URL
 from repository.database import supabase_client
+from utils import logger
 
 class UserRepo:
     def __init__(self):
@@ -45,10 +46,9 @@ class UserRepo:
             response = self.supabase.table("users").update(new_data).eq("chat_id", chat_id).execute()
             if not response:
                 raise Exception(f"Error updating user")
-
             return response.data
-        except:
-            return
+        except Exception as e:
+            logger.log(f"Error updating user: {e}", "USER_REPO_update_user()")
 
     def delete_user_by_chat_id(self, chat_id):
         """Delete a user from the database by chat ID."""
