@@ -17,4 +17,7 @@ def handle_status_user(username: str, chat_id: str):
     else:            
         print("User is not showering")
         return False
-    
+
+def handle_shower_request(username: str, chat_id: str):
+    print("Shower command called")
+    user_db.update_user_chat_id(chat_id, {"shower_status": True})
