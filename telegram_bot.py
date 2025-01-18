@@ -6,6 +6,7 @@ import command_handler.start
 import command_handler.check
 import command_handler.shower
 import command_handler.check
+import command_handler.help
 from globals import BOT_TOKEN
 import scheduler.daily_reminder
 import scheduler.day_end
@@ -21,6 +22,7 @@ command_handler.end.initialise(bot)
 command_handler.check.initialise(bot)
 command_handler.shower.initialise(bot)
 command_handler.leaderboard.initialise(bot)
+command_handler.help.initialise(bot)
 
 command_handler.catch_all.initialise(bot) # This should be the last command handler to be initialised
 
