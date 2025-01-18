@@ -1,9 +1,14 @@
 import os
-import telebot
 import dotenv
+import time
+from threading import Thread
+import schedule
+import telebot
+
 dotenv.load_dotenv()
 
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
+REMINDER_TIME = os.environ.get('REMINDER_TIME')
 bot = telebot.TeleBot(BOT_TOKEN)
 
 @bot.message_handler(commands=['start', 'hello'])
@@ -16,11 +21,30 @@ def send_welcome(message):
         "/status - Check your streak\n"
     )
 
-@bot.message_handler(func=lambda message: True)
 def echo_all(message):
     bot.reply_to(message, "Sorry, I don't understand that command. Try /help for available commands.")
 
 if __name__ == "__main__":
     print("Bot started...")
     bot.infinity_polling()
+
+chat_ids = []
+
+def send_daily_reminder():
+    for chat_id in chat_ids:
+        bot.send_message(chat_id, "Good morning! Don't forget to shower!")
+
+schedule.every().day.at(REMINDER_TIME).do(send_daily_reminder)
+
+def run_scheduler():
+    while True:
+        schedule.run_pending()
+        time.sleep(1)
+
+scheduler_thread = Thread(target=run_scheduler)
+scheduler_thread.daemon = True
+scheduler_thread.start()
+
+# Start polling for bot commands
+bot.infinity_polling()
 
