@@ -11,7 +11,7 @@ def initialise(bot):
         for chat_id in []:
             bot.send_message(chat_id, "Good morning! Don't forget to shower!")
 
-    schedule.every().day.at(REMINDER_TIME).do(send_daily_reminder)
+    schedule.every().day.at(str(REMINDER_TIME)).do(send_daily_reminder)
 
     def run_scheduler():
         logging_service.log("Scheduler started.", "SCHEDULER")
