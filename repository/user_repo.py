@@ -11,6 +11,8 @@ class UserRepo:
     def get_users(self, columns="*"):
         try:
             response = self.supabase.table("users").select(columns).execute()
+            if not response:
+                raise Exception(f"Error fetching user by chat_id: {response.error}")
             return response.data
         except:
             return []

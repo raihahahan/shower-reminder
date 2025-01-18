@@ -1,6 +1,7 @@
 
 import command_handler.catch_all
 import command_handler.end
+import command_handler.leaderboard
 import command_handler.start
 import command_handler.check
 import command_handler.shower
@@ -19,6 +20,7 @@ command_handler.start.initialise(bot)
 command_handler.end.initialise(bot)
 command_handler.check.initialise(bot)
 command_handler.shower.initialise(bot)
+command_handler.leaderboard.initialise(bot)
 
 command_handler.catch_all.initialise(bot) # This should be the last command handler to be initialised
 
