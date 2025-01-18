@@ -3,7 +3,7 @@ import datetime
 from threading import Thread
 import schedule
 from globals import REMINDER_TIME
-from service import logging_service
+from utils import logger
 
 
 def initialise(bot):
@@ -14,7 +14,7 @@ def initialise(bot):
     schedule.every().day.at(str(REMINDER_TIME)).do(send_daily_reminder)
 
     def run_scheduler():
-        logging_service.log("Scheduler started.", "SCHEDULER")
+        logger.log("Scheduler started.", "SCHEDULER")
         while True:
             schedule.run_pending()
             time.sleep(1)
