@@ -14,18 +14,14 @@ def load_and_preprocess_dataset(data_dir="dataset"):
     # Augmentations for training
     train_transforms = Compose([
     Resize((224, 224)),
-    RandomHorizontalFlip(p=0.5),
-    RandomVerticalFlip(p=0.3),  
-    RandomRotation(30),         
-    RandomResizedCrop(224, scale=(0.8, 1.0)),  
+    RandomHorizontalFlip(p=0.5), 
+    RandomRotation(30),          
     ColorJitter(
         brightness=0.3, 
         contrast=0.3, 
         saturation=0.3, 
         hue=0.1
-    ),
-    RandomGrayscale(p=0.1),    
-    RandomAffine(degrees=0, translate=(0.1, 0.1)),  
+    ), 
     ToTensor(),
     normalize
     ])
