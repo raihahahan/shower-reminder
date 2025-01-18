@@ -20,16 +20,10 @@ def handle_status_user(username: str, chat_id: str):
     data = user_db.get_user_by_chat_id(chat_id)
 
     # get the data from the database and check if the user is showering or not
+    has_showered = data[0]['has_showered_today']
+    shower_status = data[0]['shower_status']
 
-    if data['shower_status']:
-        logger.log("User is showering", CONTEXT)
-        return True
-    if data['has_showered_today']:
-        logger.log("You have showered", CONTEXT)
-        return True
-    else:            
-        logger.log("You have not showered", CONTEXT)
-        return False
+    return { 'has_showered_today': has_showered, 'shower_status': shower_status }
 
 def handle_shower_request(username: str, chat_id: str):
     logger.log("Shower command called", CONTEXT)
@@ -54,7 +48,6 @@ def handle_not_showered(chat_id):
 
 def handle_leaderboard_request():
     data = user_db.get_users()
-    print(data)
     leaderboard = "Shower Leaderboard🚿🏆\n\n"
     for i, user in enumerate(data, start=1):
         leaderboard += (

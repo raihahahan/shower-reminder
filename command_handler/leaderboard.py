@@ -4,5 +4,4 @@ def initialise(bot):
     @bot.message_handler(commands=['leaderboard'])
     def send_leaderboard(message):
         leaderboard = user_service.handle_leaderboard_request()
-        bot.reply_to(message, "Here is the leaderboard")
         bot.send_message(message.chat.id, leaderboard)
