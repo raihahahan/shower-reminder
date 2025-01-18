@@ -10,6 +10,7 @@ dotenv.load_dotenv()
 BOT_TOKEN = os.environ.get('BOT_TOKEN')
 REMINDER_TIME = os.environ.get('REMINDER_TIME')
 bot = telebot.TeleBot(BOT_TOKEN)
+chat_ids = []
 
 @bot.message_handler(commands=['start', 'hello'])
 def send_welcome(message):
@@ -23,12 +24,6 @@ def send_welcome(message):
 
 def echo_all(message):
     bot.reply_to(message, "Sorry, I don't understand that command. Try /help for available commands.")
-
-if __name__ == "__main__":
-    print("Bot started...")
-    bot.infinity_polling()
-
-chat_ids = []
 
 def send_daily_reminder():
     for chat_id in chat_ids:
