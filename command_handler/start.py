@@ -12,5 +12,5 @@ def initialise(bot):
         bot.reply_to(message, 
             "Welcome to ShowerTracker! 🚿\n\n"
             "Commands:\n"
-            "/status - Are you showering?\n"
+            "/check - Have you showered?\n"
     )

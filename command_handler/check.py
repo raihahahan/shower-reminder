@@ -1,21 +1,20 @@
 from service import user_service
 
 def initialise(bot):
-    @bot.message_handler(commands=['status'])
+    @bot.message_handler(commands=['check'])
     def send_status(message):
-        bot.reply_to(message, "Status command called")
         user_id = message.from_user.id
         username = message.from_user.username
-        is_showering = user_service.handle_status_user(username, user_id)
+        has_showered = user_service.handle_status_user(username, user_id)
 
-        if is_showering:
+        if has_showered:
             bot.send_message(
-                user_id, "You are currently showering.\nDo you wish to stop? \n\n"
+                user_id, "You have showered."
                 "/end - Stop showering\n"
                 )
         else:
             bot.send_message(
-                user_id, "You are not showering...\nDo you wish to start? \n\n"
+                user_id, "You haven't showered...\nDo you wish to start? \n\n"
                 "/shower - Start showering\n"
                 "/end - No later, hopefully\n"
                 )

@@ -2,9 +2,8 @@
 import command_handler.catch_all
 import command_handler.end
 import command_handler.start
-import command_handler.status
+import command_handler.check
 import command_handler.shower
-import command_handler.status
 from service import scheduler
 from globals import BOT_TOKEN
 import scheduler.daily_reminder
@@ -18,7 +17,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # Initialise command handlers
 command_handler.start.initialise(bot)
 command_handler.end.initialise(bot)
-command_handler.status.initialise(bot)
+command_handler.check.initialise(bot)
 command_handler.shower.initialise(bot)
 
 command_handler.catch_all.initialise(bot) # This should be the last command handler to be initialised
