@@ -31,6 +31,8 @@ def send_daily_reminder():
     for chat_id in chat_ids:
         bot.send_message(chat_id, "Good morning! Don't forget to shower!")
 
+
+#region SCHEDULER
 schedule.every().day.at(REMINDER_TIME).do(send_daily_reminder)
 
 def run_scheduler():
@@ -41,6 +43,7 @@ def run_scheduler():
 scheduler_thread = Thread(target=run_scheduler)
 scheduler_thread.daemon = True
 scheduler_thread.start()
+#endregion
 
 # Start polling for bot commands
 bot.infinity_polling()
