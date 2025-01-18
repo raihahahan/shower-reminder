@@ -1,11 +1,17 @@
 from repository.user_repo import user_db
 from utils import logger
+from datetime import datetime
 
 CONTEXT = "USER SERVICE"
 
 def handle_start_user(username: str, chat_id: str):
     logger.log("Start command called", CONTEXT)
     user_db.create_user(username, chat_id)
+
+def reset_for_day(chat_id, has_showered):
+    user_db.update_user(chat_id, { "shower_status": False, "start_time": None, "end_time": None, "has_showered_today": False })
+    if not has_showered:
+        user_db.update_user(chat_id, { "shower_count": 0 })
 
 def handle_status_user(username: str, chat_id: str):
     logger.log("Status command called", CONTEXT)
@@ -23,7 +29,10 @@ def handle_status_user(username: str, chat_id: str):
 def handle_shower_request(username: str, chat_id: str):
     logger.log("Shower command called", CONTEXT)
     handle_start_user(username, chat_id)
-    user_db.update_user(chat_id, {"shower_status": True})
+    try:
+       res = user_db.update_user(chat_id, { "shower_status": True, "start_time": datetime.now().isoformat() })
+    except Exception as e:
+        logger.log("Error handling shower request", CONTEXT)
 
 def get_all_chat_ids():
     data = user_db.get_users(columns="chat_id")

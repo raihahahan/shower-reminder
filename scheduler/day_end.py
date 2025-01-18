@@ -1,7 +1,7 @@
 import time
 from threading import Thread
 from schedule import Scheduler
-from globals import REMINDER_TIME, BOT_TOKEN    
+from globals import END_TIME  
 from utils import logger
 from service import user_service
 
@@ -21,11 +21,12 @@ def initialise(bot):
                     bot.send_message(chat_id, "You have showered today! Good job! ✅")
                 else:
                     user_service.handle_not_showered(chat_id)
+                    user_service.reset_for_day(chat_id, has_showered=has_showered_today)
                     bot.send_message(chat_id, "You have not showered today :( 🤮")
             except Exception as e:
                 logger.log(f"Failed to send reminder to {chat_id}: {e}", CONTEXT)
 
-    scheduler.every().day.at("16:36").do(send_day_end_reminder)
+    scheduler.every().day.at(END_TIME).do(send_day_end_reminder)
 
     def run_day_end_scheduler():
         logger.log("Day end scheduler started.", CONTEXT)
