@@ -61,7 +61,7 @@ def handle_leaderboard_request():
             f"   • *Showering Now:* {'✅' if user['shower_status'] else '❌'}\n"
             f"   • *Shower Count:* {user['shower_count']}\n"
             f"   • *Total Shower Time:* {duration}\n"
-            "━━━━━━━━━━━━━━━━━━━━━━\n" 
+            "━━━\n" 
         )
 
     return leaderboard
