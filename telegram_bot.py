@@ -1,3 +1,4 @@
+import command_handler.catch_all
 import command_handler.end
 import command_handler.start
 import telebot
@@ -11,6 +12,7 @@ bot = telebot.TeleBot(BOT_TOKEN)
 # Initialise command handlers
 command_handler.start.initialise(bot)
 command_handler.end.initialise(bot)
+command_handler.catch_all.initialise(bot)
 
 # Initialise scheduler
 scheduler.initialise(bot)

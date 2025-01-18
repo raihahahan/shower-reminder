@@ -1,2 +1,4 @@
 def initialise(bot):
-    pass
+    @bot.message_handler(commands=['end'])
+    def send_end(message):
+        bot.reply_to(message, "End command called")
