@@ -1,0 +1,4 @@
+telebot==0.0.5
+python-dotenv==1.0.1
+schedule==1.2.2
+supabase
