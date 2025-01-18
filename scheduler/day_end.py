@@ -20,8 +20,8 @@ def initialise(bot):
                     bot.send_message(chat_id, "You have showered today! Good job! ✅")
                 else:
                     user_service.handle_not_showered(chat_id)
-                    user_service.reset_for_day(chat_id, has_showered=has_showered_today)
                     bot.send_message(chat_id, "You have not showered today :( 🤮")
+                user_service.reset_for_day(chat_id, has_showered=has_showered_today)
             except Exception as e:
                 logger.log(f"Failed to send reminder to {chat_id}: {e}", CONTEXT)
 

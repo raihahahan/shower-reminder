@@ -1,42 +1,56 @@
-document.addEventListener("DOMContentLoaded", () => {
-  const siteInput = document.getElementById("site-input");
-  const addSiteButton = document.getElementById("add-site");
-  const blockedSitesList = document.getElementById("blocked-sites");
+document
+  .getElementById("telegram-form")
+  .addEventListener("submit", async function (event) {
+    event.preventDefault();
 
-  function updateUI(sites) {
-    blockedSitesList.innerHTML = "";
-    sites.forEach((site) => {
-      const li = document.createElement("li");
-      li.textContent = site;
-      const removeButton = document.createElement("button");
-      removeButton.textContent = "Remove";
-      removeButton.onclick = () => removeSite(site);
-      li.appendChild(removeButton);
-      blockedSitesList.appendChild(li);
-    });
-  }
+    const username = document.getElementById("telegram-username").value;
 
-  function removeSite(site) {
-    chrome.storage.sync.get({ blockedSites: [] }, function (data) {
-      const updatedSites = data.blockedSites.filter((s) => s !== site);
-      chrome.storage.sync.set({ blockedSites: updatedSites });
-    });
-  }
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/check_shower/${username}`
+      );
+      const data = await response.json();
 
-  addSiteButton.addEventListener("click", () => {
-    const site = siteInput.value.trim();
-    if (site) {
-      chrome.storage.sync.get({ blockedSites: [] }, function (data) {
-        if (!data.blockedSites.includes(site)) {
-          const updatedSites = [...data.blockedSites, site];
-          chrome.storage.sync.set({ blockedSites: updatedSites });
+      if (response.ok) {
+        // Store the result in Chrome storage
+        chrome.storage.sync.set(
+          { username: username, hasShoweredToday: data.has_showered_today },
+          () => {
+            console.log(
+              "Stored in Chrome storage:",
+              username,
+              data.has_showered_today
+            );
+          }
+        );
+
+        // Display the result
+        if (data.has_showered_today === true) {
+          document.getElementById(
+            "output"
+          ).innerText = `User ${username} has showered today. Refresh this page if it is currently blocked.`;
+        } else {
+          document.getElementById(
+            "output"
+          ).innerText = `User ${username} has NOT showered today. Coding pages will be blocked.`;
         }
-      });
-      siteInput.value = "";
+
+        document.getElementById("remove-button").style.display = "block";
+      } else {
+        document.getElementById("output").innerText = `Error: ${data.detail}`;
+      }
+    } catch (err) {
+      console.error("Error:", err);
+      document.getElementById("output").innerText = `Error: ${err.message}`;
     }
   });
 
-  chrome.storage.sync.get({ blockedSites: [] }, function (data) {
-    updateUI(data.blockedSites);
+// Handle removal of username
+document.getElementById("remove-button").addEventListener("click", function () {
+  chrome.storage.sync.remove("username", () => {
+    console.log("Username removed from Chrome storage");
+    document.getElementById("output").innerText = "Username removed.";
+    document.getElementById("remove-button").style.display = "none";
+    chrome.runtime.sendMessage({ action: "stopBlocking" });
   });
 });

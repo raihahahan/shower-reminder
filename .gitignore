@@ -32,11 +32,14 @@ MANIFEST
 *.manifest
 *.spec
 
+blocker-venv*
+
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 
 logs.txt
+.prettierignore
 _ruleset*
 
 # Unit test / coverage reports
