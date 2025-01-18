@@ -9,8 +9,9 @@ def initialise(bot):
         chat_id = message.chat.id
         user_service.handle_start_user(username, chat_id)
 
-        bot.reply_to(message, 
+        bot.send_message(chat_id, 
             "Welcome to ShowerTracker! 🚿\n\n"
-            "/check - Have you showered?\n"
-            "/leaderboard - Check the leaderboard\n"
-    )
+            "/shower - Start a shower 🛀\n"
+            "/check - Have you showered? 🤔\n"
+            "/leaderboard - Check the leaderboard 🔝\n"
+        )

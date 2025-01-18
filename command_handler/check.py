@@ -5,21 +5,21 @@ def initialise(bot):
     def send_status(message):
         user_id = message.from_user.id
         username = message.from_user.username
-        has_showered = user_service.handle_status_user(username, user_id)
+        status = user_service.handle_status_user(username, user_id)
+        has_showered = status['has_showered_today']
+        shower_status = status['shower_status']
 
         if has_showered:
             bot.send_message(
                 user_id, "You have showered today."
                 )
         else:
-            bot.send_message(
-                user_id, "You haven't showered...\nDo you wish to start? \n\n"
-                "/shower - Start showering\n"
-                "/end - No later, hopefully\n"
-                )
-
-        #calling status will return the status of the user 
-        #calls a function from service folder -> to
-        # 1. fetch data from databse 
-        # 2. use the results to determine if the user is showering or not
+            if shower_status:
+                bot.send_message(user_id, "You haven't showered but are currently showering. You may end with /end")
+            else:
+                bot.send_message(
+                    user_id, "You haven't showered...\nDo you wish to start? \n\n"
+                    "/shower - Start showering\n"
+                    "/end - No later, hopefully\n"
+                    )
 
