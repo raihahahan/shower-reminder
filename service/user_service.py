@@ -1,23 +1,39 @@
 from repository.user_repo import user_db
+from utils import logger
+
+CONTEXT = "USER SERVICE"
 
 def handle_start_user(username: str, chat_id: str):
-    print("Start command called")
+    logger.log("Start command called", CONTEXT)
     user_db.create_user(username, chat_id)
 
 def handle_status_user(username: str, chat_id: str):
-    print("Status command called")
+    logger.log("Status command called", CONTEXT)
     data = user_db.get_user_by_chat_id(chat_id)
-    print(data)
 
-    #get the data from the database and check if the user is showering or not
-    
+    # get the data from the database and check if the user is showering or not
+
     if data[0]['shower_status']:
-        print("User is showering")
+        logger.log("User is showering", CONTEXT)
         return True
     else:            
-        print("User is not showering")
+        logger.log("User is not showering", CONTEXT)
         return False
 
 def handle_shower_request(username: str, chat_id: str):
-    print("Shower command called")
-    user_db.update_user_chat_id(chat_id, {"shower_status": True})
+    logger.log("Shower command called", CONTEXT)
+    handle_start_user(username, chat_id)
+    user_db.update_user(chat_id, {"shower_status": True})
+
+def get_all_chat_ids():
+    data = user_db.get_users(columns="chat_id")
+    return list(map(lambda i : ['chat_id'], data))
+
+def get_users_status():
+    data = user_db.get_users(columns="chat_id, has_showered_today")
+    return data
+
+def handle_not_showered(chat_id):
+    new_data = { 'shower_count': 0 }
+    user_db.update_user(chat_id, new_data)
+
