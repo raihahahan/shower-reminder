@@ -44,7 +44,7 @@ def handle_not_showered(chat_id):
     user_db.update_user(chat_id, new_data)
 
 
-def handle_leaderboard_request(bot):
+def handle_leaderboard_request():
     data = user_db.get_users()
     data = sorted(data, key=lambda user: user['shower_count'], reverse=True)
     
