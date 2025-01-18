@@ -4,6 +4,8 @@ from datetime import datetime
 
 CONTEXT = "USER SERVICE"
 
+from datetime import datetime
+
 def handle_start_user(username: str, chat_id: str):
     logger.log("Start command called", CONTEXT)
     user_db.create_user(username, chat_id)
@@ -59,3 +61,38 @@ def handle_leaderboard_request():
             f"   - Showered Today: {'✅' if user['has_showered_today'] else '❌'}\n\n"
         )
     return leaderboard
+def end_shower(chat_id: str):
+    user = user_db.get_user_by_chat_id(chat_id)
+    if not user:
+        raise ValueError("User not found!!")
+
+    start_time = user.get("start_time")
+    if start_time is None:
+        raise ValueError("You did not start a shower session!! Go scan the QR code.")
+    if not isinstance(start_time, str):
+        raise ValueError(f"Invalid start_time format: {start_time}")
+
+    start_time = datetime.fromisoformat(start_time)
+    end_time = datetime.now()
+    duration = end_time - start_time
+    minutes = duration.total_seconds() / 60
+
+    if minutes > 5:
+        user_db.update_user(
+            chat_id,
+            {
+                "shower_status": False,
+                "end_time": end_time.isoformat(),
+                "shower_count": user.get("shower_count", 0) + 1,
+                "has_showered_today": True
+            }
+        )
+        return {
+            "status": "success",
+            "message": "Shower ended! You've spent {int(minutes)} showering!"
+        }
+    else:
+        return {
+            "status": "failed",
+            "message": "You did not shower at all."
+        }
