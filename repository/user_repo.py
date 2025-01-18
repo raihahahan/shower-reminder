@@ -29,12 +29,15 @@ class UserRepo:
         except:
             return
 
-    def update_user_chat_id(self, username, new_data):
+    def update_user_chat_id(self, chat_id, new_data):
         """Update a user's chat ID."""
-        response = self.supabase.table("users").update(new_data).eq("username", username).execute()
-        if response.error:
-            raise Exception(f"Error updating user: {response.error}")
-        return response.data
+        try:
+            response = self.supabase.table("users").update(new_data).eq("chat_id", chat_id).execute()
+            if not response:
+                raise Exception(f"Error updating user chat_id: {response.error}")
+            return response.data
+        except:
+            return
 
     def delete_user_by_chat_id(self, chat_id):
         """Delete a user from the database by chat ID."""
