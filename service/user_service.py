@@ -108,3 +108,10 @@ def handle_end_shower(chat_id: str):
             "status": "failed",
             "message": "Shower longer!"
         }
+
+
+def handle_check_email(username):
+    #find your email through username
+    print(username)
+    data = user_db.get_user_by_username(username)
+    return False if 'email' not in data else True
