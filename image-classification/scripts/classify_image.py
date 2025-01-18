@@ -1,16 +1,11 @@
-import sys
-import os
-
-from transformers import AutoImageProcessor
+from transformers import AutoFeatureExtractor, AutoModelForImageClassification
 from PIL import Image
 import torch
-sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
-from models.resnet_model.load_model import load_saved_model
 
-def classify_image(image_path):
-    # Load model and feature extractor
-    model = load_saved_model()
-    feature_extractor = AutoImageProcessor.from_pretrained("microsoft/resnet-50")
+def classify_image(image_path, model_dir="models/fine_tuned_resnet"):
+    # Load the fine-tuned model and feature extractor
+    model = AutoModelForImageClassification.from_pretrained(model_dir)
+    feature_extractor = AutoFeatureExtractor.from_pretrained("microsoft/resnet-50")
 
     # Load and preprocess the image
     img = Image.open(image_path).convert("RGB")
@@ -22,18 +17,13 @@ def classify_image(image_path):
 
     # Convert logits to probabilities
     probs = torch.nn.functional.softmax(outputs.logits, dim=-1)
-    top_probs, top_indices = torch.topk(probs, k=3)
+    predicted_class = probs.argmax(dim=-1).item()
 
-    # Decode labels
-    labels = model.config.id2label
-    predictions = [
-        {"label": labels[idx.item()], "score": prob.item()}
-        for idx, prob in zip(top_indices[0], top_probs[0])
-    ]
-    return predictions
+    # Map predictions to labels
+    id2label = {0: "not_showerhead", 1: "showerhead"}
+    return id2label[predicted_class], probs[0][predicted_class].item()
 
 if __name__ == "__main__":
-    image_path = "data/images/showerhead.jpg"  # Replace with your test image
-    result = classify_image(image_path)
-    for pred in result:
-        print(f"Label: {pred['label']}, Confidence: {pred['score']:.2f}")
+    image_path = "dataset/val/showerhead/img1.jpg"  # Replace with your image path
+    label, confidence = classify_image(image_path)
+    print(f"Predicted: {label} with confidence {confidence:.2f}")
