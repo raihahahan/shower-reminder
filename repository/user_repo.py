@@ -1,5 +1,5 @@
 from supabase import create_client, Client
-from database import SUPABASE_KEY, SUPABASE_URL
+from repository.database import SUPABASE_KEY, SUPABASE_URL
 
 class UserRepo:
     def __init__(self):
