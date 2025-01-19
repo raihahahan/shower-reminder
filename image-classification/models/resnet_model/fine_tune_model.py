@@ -41,7 +41,7 @@ def get_class_weights(dataset):
 
 
 class CustomTrainer(Trainer):
-    def __init__(self, class_weights, *args, continue_training=False, **kwargs):
+    def __init__(self, class_weights, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.class_weights = class_weights
         self.focal_loss = FocalLoss(gamma=2.5)
@@ -159,6 +159,7 @@ def fine_tune_convnext(output_dir="models/fine_tuned_convnext", continue_trainin
         eval_dataset=dataset["validation"],
         compute_metrics=compute_metrics,
         continue_training=continue_training,
+
         callbacks=[
             EarlyStoppingCallback(
                 early_stopping_patience=3,
