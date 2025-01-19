@@ -31,15 +31,33 @@ def initialise(bot):
             photo = message.photo[-1].file_id
             file_info = bot.get_file(photo)
             downloaded_photo = bot.download_file(file_info.file_path)
+            bot.send_message(chat_id, "Running image inference. Please wait...")
+            is_showerhead, confidence, predicted_class, is_confident, ai_label = api.photo_validator.validate_photo(downloaded_photo)
 
-            is_valid = api.photo_validator.validate_photo(downloaded_photo)
-
-            if is_valid:
-                bot.send_message(chat_id, "Nice! You're good to go. Press /end after you're done showering for a decent amount of time.")
+            if is_showerhead:
+                response_message = (
+                    f"Nice! You're good to go. 🛁\n\n"
+                    f"**Prediction Details:**\n"
+                    f"- **Predicted Class:** {predicted_class}\n"
+                    f"- **AI Label:** {ai_label}\n"
+                    f"- **Confidence:** {confidence:.2f}\n"
+                    f"- **Confident Prediction:** {'Yes' if is_confident else 'No'}\n\n"
+                    f"Use /end to log your shower!\n"
+                )
+                bot.send_message(chat_id, response_message, parse_mode="Markdown")
                 user_service.handle_shower_request(username, user_id)
-            else:
-                bot.reply_to(message, "Please send a picture of a shower head instead 😾. Send /shower again to start.")
                 state_service.finish_photo_request(user_id)
+            else:
+                response_message = (
+                    f"Please send a picture of a shower head instead 😾.\n\n"
+                    f"**Prediction Details:**\n"
+                    f"- **Predicted Class:** {predicted_class}\n"
+                    f"- **AI Label:** {ai_label}\n"
+                    f"- **Confidence:** {confidence:.2f}\n"
+                    f"- **Confident Prediction:** {'Yes' if is_confident else 'No'}\n\n"
+                    f"Please send another valid photo\n"
+                )
+                bot.reply_to(message, response_message, parse_mode="Markdown")
         
         else:
             bot.reply_to(message, "I wasn't expecting a picture from you right now.")
