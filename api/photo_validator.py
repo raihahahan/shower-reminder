@@ -16,17 +16,10 @@ def validate_photo(photo):
         confidence = result.get("confidence", 0.0)
         predicted_class = result.get("predicted_class", "Unknown")
         is_confident = result.get("is_confident", False)
-        
-        # Print model predictions
-        print("----- Model Prediction -----")
-        print(f"Predicted Class: {predicted_class}")
-        print(f"Confidence: {confidence:.2f}")
-        print(f"Confident Prediction: {'Yes' if is_confident else 'No'}")
-        print(f"Is Showerhead: {'Yes' if is_showerhead else 'No'}")
-        print("----------------------------")
+        ai_label = result.get("ai_label", "Unknown")  # Retrieve AI-predicted label
         
         # Return the `is_showerhead` value if confidence is sufficient
-        return is_showerhead, confidence, predicted_class, is_confident
+        return is_showerhead, confidence, predicted_class, is_confident, ai_label
             
     except Exception as e:
         print(f"Error in validation: {e}")
