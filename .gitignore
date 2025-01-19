@@ -31,12 +31,15 @@ MANIFEST
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
 *.manifest
 *.spec
-
+*.png
+blocker-venv*
+.env*
 # Installer logs
 pip-log.txt
 pip-delete-this-directory.txt
 
 logs.txt
+.prettierignore
 _ruleset*
 
 # Unit test / coverage reports

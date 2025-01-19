@@ -4,8 +4,6 @@ from datetime import datetime, timezone
 
 CONTEXT = "USER SERVICE"
 
-from datetime import datetime
-
 def handle_start_user(username: str, chat_id: str):
     logger.log("Start command called", CONTEXT)
     user_db.create_user(username, chat_id)
@@ -48,14 +46,24 @@ def handle_not_showered(chat_id):
 
 def handle_leaderboard_request():
     data = user_db.get_users()
+    data = sorted(data, key=lambda user: user['shower_count'], reverse=True)
+    
     leaderboard = "Shower Leaderboard🚿🏆\n\n"
+
     for i, user in enumerate(data, start=1):
+        total_duration = user.get('total_duration', 0.0)
+        duration = f"{total_duration:.2f} minutes" if total_duration > 0.0 else "hasn't showered 🗿️️" 
+
         leaderboard += (
             f"{i}️⃣ {user['username']}\n"
-            f"   - Shower Status: {'✅' if user['shower_status'] else '❌'}\n"
-            f"   - Shower Count: {user['shower_count']}\n"
-            f"   - Showered Today: {'✅' if user['has_showered_today'] else '❌'}\n\n"
+            f" {'👑 Shower King 👑' if user['shower_count'] > 5 else '🚿 Rookie 🚿'}\n\n"
+            f"   • *Showered Today:* {'✅' if user['has_showered_today'] else '❌'}\n"
+            f"   • *Showering Now:* {'✅' if user['shower_status'] else '❌'}\n"
+            f"   • *Shower Count:* {user['shower_count']}\n"
+            f"   • *Total Shower Time:* {duration}\n"
+            "━━━\n" 
         )
+
     return leaderboard
 
 def handle_end_shower(chat_id: str):
@@ -63,14 +71,14 @@ def handle_end_shower(chat_id: str):
     if not user:
         return {
             "status": "failed",
-            "message": "User not found!!"
+            "message": "User not found!! Start a new chat now using the /start command."
         }
 
     start_time = user.get("start_time")
     if not user.get("shower_status"):
         return {
             "status": "failed",
-            "message": "You did not start a shower session byee!!"
+            "message": "You did not start a shower session!! Start your shower now using the /shower command."
         }
     
     start_time = datetime.fromisoformat(start_time)
@@ -87,17 +95,18 @@ def handle_end_shower(chat_id: str):
                 "shower_status": False,
                 "end_time": end_time.isoformat(),
                 "shower_count": user.get("shower_count", 0) + 1,
-                "has_showered_today": True
+                "has_showered_today": True,
+                "total_duration": user.get("shower_duration", 0.0) + minutes
             }
         )
         return {
             "status": "success",
-            "message": f"Shower ended! You've spent {minutes:.2f} minutes showering!"
+            "message": f"Shower ended! You've spent {minutes:.2f} minutes showering! "
         }
     else:
         return {
             "status": "failed",
-            "message": "You did not shower at all."
+            "message": "Shower longer!"
         }
 
 

@@ -1,18 +1,25 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
   <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Website Blocker</title>
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <h1>Website Blocker</h1>
-    <input
-      type="text"
-      id="site-input"
-      placeholder="Enter website (e.g., example.com)"
-    />
-    <button id="add-site">Block</button>
-    <ul id="blocked-sites"></ul>
+    <h1>Shower Break</h1>
+    <form id="telegram-form">
+      <label for="telegram-username">Enter your Telegram Username:</label>
+      <input
+        type="text"
+        id="telegram-username"
+        name="telegram-username"
+        required
+      />
+      <button type="submit">Submit</button>
+    </form>
+    <button id="remove-button" style="display: none">Remove Username</button>
+    <p id="output"></p>
     <script src="popup.js"></script>
   </body>
 </html>
