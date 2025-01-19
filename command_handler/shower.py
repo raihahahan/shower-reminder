@@ -31,7 +31,7 @@ def initialise(bot):
             photo = message.photo[-1].file_id
             file_info = bot.get_file(photo)
             downloaded_photo = bot.download_file(file_info.file_path)
-
+            bot.send_message(chat_id, "Running image inference. Please wait...")
             is_showerhead, confidence, predicted_class, is_confident, ai_label = api.photo_validator.validate_photo(downloaded_photo)
 
             if is_showerhead:
