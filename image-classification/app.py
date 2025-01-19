@@ -25,8 +25,7 @@ def predict():
         if 'image' not in data:
             return jsonify({'error': 'No image provided'}), 400
             
-        predicted_class, confidence = classifier.predict(data['image'])
-        is_showerhead = predicted_class.lower() == "showerhead"
+        is_showerhead, confidence, ai_label = classifier.predict(data['image'])
         
         # Define a confidence threshold
         CONFIDENCE_THRESHOLD = 0.7
@@ -36,8 +35,9 @@ def predict():
         return jsonify({
             'is_showerhead': is_showerhead and is_confident,
             'confidence': confidence,
-            'predicted_class': predicted_class,
-            'is_confident': is_confident
+            'predicted_class': is_showerhead,
+            'is_confident': is_confident,
+            'ai_label': ai_label 
         })
         
     except Exception as e:

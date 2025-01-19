@@ -41,7 +41,16 @@ class ImageClassifier:
                 confidence = probabilities[0][predicted_idx].item()
                 predicted_class = class_labels[predicted_idx]
                 
-                return predicted_class, confidence
+                is_showerhead = predicted_class.lower() == "showerhead"
+                
+                # If not a showerhead, include the predicted label
+                if not is_showerhead:
+                    ai_label = predicted_class  # Here, predicted_class will be "not showerhead"
+                else:
+                    ai_label = "showerhead"
+                
+                # Return showerhead flag, confidence, and AI's predicted label
+                return is_showerhead, confidence, ai_label
 
         except Exception as e:
             print(f"Error in prediction: {e}")
