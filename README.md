@@ -1,4 +1,4 @@
-Here’s a detailed README template for your hackathon project:
+(ps. The instructions here may not be the most updated)
 
 ---
 
