@@ -8,3 +8,4 @@ datasets
 evaluate
 accelerate>=0.26.0
 scikit-learn
+flask-cors

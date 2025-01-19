@@ -8,58 +8,59 @@ from torchvision.transforms import (
 
 def load_and_preprocess_dataset(data_dir="dataset"):
     dataset = load_dataset("imagefolder", data_dir=data_dir)
+    
     normalize = Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
     
-    train_transforms = Compose([
-        Resize((256, 256)),  # Larger initial size
-        RandomResizedCrop(224, scale=(0.7, 1.0), ratio=(0.75, 1.33)),
-        RandomHorizontalFlip(p=0.5),
-        RandomVerticalFlip(p=0.3),
-        RandomRotation(45),
-        RandomAffine(degrees=30, translate=(0.1, 0.1), scale=(0.8, 1.2), shear=15),
-        RandomPerspective(distortion_scale=0.5, p=0.5),
-        ColorJitter(brightness=0.4, contrast=0.4, saturation=0.4, hue=0.2),
-        RandomGrayscale(p=0.1),
-        GaussianBlur(kernel_size=3, sigma=(0.1, 2.0)),
-        ToTensor(),
-        normalize
-    ])
-    
-    val_transforms = Compose([
+    # Simpler transforms
+    transforms = Compose([
         Resize((224, 224)),
-        CenterCrop(224),
         ToTensor(),
         normalize
     ])
 
-    def preprocess_images(examples, transforms):
+    def preprocess_images(examples):
         if "image" not in examples:
-            print(f"Batch keys: {examples.keys()}")
             raise ValueError("Expected 'image' key in examples but not found.")
 
-        pixel_values = []
-        for image in examples["image"]:
-            try:
-                transformed_image = transforms(image.convert("RGB"))
-                pixel_values.append(transformed_image.numpy())
-            except Exception as e:
-                print(f"Error processing image: {e}")
-                continue
-                
-        examples["pixel_values"] = pixel_values
+        examples["pixel_values"] = [
+            transforms(image.convert("RGB")).numpy() 
+            for image in examples["image"]
+        ]
         return examples
 
+    processed_dataset = dataset.map(
+        preprocess_images,
+        batched=True,
+        remove_columns=dataset["train"].column_names,
+        desc="Processing dataset"
+    )
+
+    processed_dataset.set_format(type="torch", columns=["pixel_values", "label"])
+    return processed_dataset
+
+    def apply_extra_augmentations(image):
+        # Extra augmentations for minority class
+        extra_transforms = Compose([
+            RandomHorizontalFlip(p=0.8),
+            RandomRotation(45),
+            ColorJitter(brightness=0.5, contrast=0.5, saturation=0.5),
+        ])
+        return extra_transforms(image)
+
+    # Apply preprocessing to train and validation datasets separately
     # Apply preprocessing to train and validation datasets separately
     train_dataset = dataset["train"].map(
         lambda examples: preprocess_images(examples, train_transforms),
         batched=True,
-        remove_columns=[col for col in dataset["train"].column_names if col != "label"]
+        remove_columns=dataset["train"].column_names,  # Remove all original columns
+        desc="Processing training dataset"
     )
     
     val_dataset = dataset["validation"].map(
         lambda examples: preprocess_images(examples, val_transforms),
         batched=True,
-        remove_columns=[col for col in dataset["validation"].column_names if col != "label"]
+        remove_columns=dataset["validation"].column_names,  # Remove all original columns
+        desc="Processing validation dataset"
     )
 
     # Set the format to PyTorch tensors

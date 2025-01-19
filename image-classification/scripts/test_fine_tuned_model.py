@@ -4,7 +4,7 @@ import os
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), "..")))
 from scripts.classify_image import classify_image
 
-def test_model(test_dir="dataset/val"):
+def test_model(test_dir="image-classification/dataset/val"):
     """
     Tests the fine-tuned model on a validation dataset.
 
