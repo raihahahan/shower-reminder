@@ -1,2 +1,2 @@
 *.safetensors
-dataset/
+dataset/*
