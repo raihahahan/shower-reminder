@@ -1,78 +1,23 @@
-# app.py
 from flask import Flask, request, jsonify
-import torch
-from PIL import Image
-import io
-import base64
-import os
-from torchvision.transforms import Compose, Resize, ToTensor, Normalize
-from transformers import AutoModelForImageClassification
+from flask_cors import CORS
+from image_classifier import ImageClassifier
 
 app = Flask(__name__)
+CORS(app)
 
-# Update model path to point to the correct directory
-MODEL_PATH = os.path.join(os.path.dirname(__file__), 'models', 'fine_tuned_resnet')
-
-def load_model(model_path=MODEL_PATH):
-    print(f"Loading model from: {model_path}")
-    try:
-        model = AutoModelForImageClassification.from_pretrained(
-            model_path,
-            num_labels=2,
-            id2label={0: "not_showerhead", 1: "showerhead"},
-            label2id={"not_showerhead": 0, "showerhead": 1},
-            local_files_only=True  # Add this to ensure it loads from local path
-        )
-        model.eval()
-        return model
-    except Exception as e:
-        print(f"Error loading model: {e}")
-        raise
-
-def get_transforms():
-    return Compose([
-        Resize((224, 224)),
-        ToTensor(),
-        Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
-    ])
-
-def predict_image(model, image_base64):
-    try:
-        # Decode base64 to image
-        image_data = base64.b64decode(image_base64)
-        image = Image.open(io.BytesIO(image_data)).convert('RGB')
-        
-        # Transform image
-        transforms = get_transforms()
-        image_tensor = transforms(image).unsqueeze(0)  # Add batch dimension
-        
-        # Make prediction
-        with torch.no_grad():
-            outputs = model(image_tensor)
-            logits = outputs.logits
-            probabilities = torch.nn.functional.softmax(logits, dim=1)
-            predicted_class = torch.argmax(logits, dim=1).item()
-            confidence = probabilities[0][predicted_class].item()
-            
-        return predicted_class == 1, confidence
-        
-    except Exception as e:
-        print(f"Error in prediction: {e}")
-        return False, 0.0
-
-# Load model globally with error handling
+# Initialize classifier globally
 try:
-    print("Attempting to load model...")
-    model = load_model(MODEL_PATH)
-    print("Model loaded successfully")
+    print("Loading classifier...")
+    classifier = ImageClassifier()
+    print("Classifier loaded successfully")
 except Exception as e:
-    print(f"Failed to load model: {e}")
-    model = None
+    print(f"Failed to load classifier: {e}")
+    classifier = None
 
 @app.route('/predict', methods=['POST'])
 def predict():
-    if model is None:
-        return jsonify({'error': 'Model not loaded'}), 500
+    if classifier is None:
+        return jsonify({'error': 'Classifier not loaded'}), 500
         
     try:
         data = request.get_json()
@@ -80,11 +25,19 @@ def predict():
         if 'image' not in data:
             return jsonify({'error': 'No image provided'}), 400
             
-        is_showerhead, confidence = predict_image(model, data['image'])
+        predicted_class, confidence = classifier.predict(data['image'])
+        is_showerhead = predicted_class.lower() == "showerhead"
         
+        # Define a confidence threshold
+        CONFIDENCE_THRESHOLD = 0.7
+        is_confident = confidence >= CONFIDENCE_THRESHOLD
+        
+        # Return the prediction results
         return jsonify({
-            'is_showerhead': is_showerhead,
-            'confidence': confidence
+            'is_showerhead': is_showerhead and is_confident,
+            'confidence': confidence,
+            'predicted_class': predicted_class,
+            'is_confident': is_confident
         })
         
     except Exception as e:
@@ -94,11 +47,48 @@ def predict():
 def health_check():
     return jsonify({
         'status': 'healthy',
-        'model_loaded': model is not None
+        'model_loaded': classifier is not None,
+        'device': str(classifier.device) if classifier else None
     })
+
+@app.route('/', methods=['GET'])
+def home():
+    return jsonify({
+        'status': 'online',
+        'endpoints': {
+            'predict': '/predict (POST) - Send base64 image for prediction',
+            'health': '/health (GET) - Check server status'
+        }
+    })
+
+@app.errorhandler(404)
+def not_found(e):
+    return jsonify({'error': 'Route not found'}), 404
+
+@app.errorhandler(500)
+def server_error(e):
+    return jsonify({'error': 'Internal server error'}), 500
+
+@app.before_request
+def log_request_info():
+    print('Headers:', dict(request.headers))
+    if request.method != 'GET':
+        print('Request method:', request.method)
+
+@app.after_request
+def after_request(response):
+    response.headers.add('Access-Control-Allow-Origin', '*')
+    response.headers.add('Access-Control-Allow-Headers', 'Content-Type')
+    response.headers.add('Access-Control-Allow-Methods', 'GET,POST')
+    return response
 
 if __name__ == '__main__':
     try:
-        app.run(host='0.0.0.0', port=8000, debug=True)  # Changed port to 8000
+        print("Starting server...")
+        print("Available routes:")
+        print("  - GET  /")
+        print("  - GET  /health")
+        print("  - POST /predict")
+        app.run(host='localhost', port=8000, debug=True)
     except Exception as e:
         print(f"Failed to start server: {e}")
