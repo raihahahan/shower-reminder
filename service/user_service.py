@@ -64,7 +64,21 @@ def handle_leaderboard_request():
             "━━━\n" 
         )
 
-    return leaderboard
+        hygienic_heroes = "\nHygienic Heroes 👑🐐\n\n"
+        for user in data:
+            if user['has_showered_today']:
+                hygienic_heroes += (
+                    f"• {user['username']}\n"
+                )
+
+        smelly_skunks = "\nSmelly Skunks 🦨💨👎\n\n"
+        for user in data:
+            if not user['has_showered_today']:
+                smelly_skunks += (
+                    f"• {user['username']}\n"
+                )
+
+    return leaderboard + hygienic_heroes + smelly_skunks
 
 def handle_end_shower(chat_id: str):
     user = user_db.get_user_by_chat_id(chat_id)
